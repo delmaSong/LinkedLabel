@@ -300,7 +300,7 @@ private func configureLabel() {
       range: NSRange(location: 0, length: messageText.count)
     )
     for m in matches {
-      if let url = m.url {            //1.
+      if let url = m.url {
         urlAttributes[.attachment] = url
         mutableString.setAttributes(urlAttributes, range: m.range)
       }
@@ -322,7 +322,7 @@ private func configureLabel() {
 
 하지만 지금은 링크를 눌러도 아무런 변화가 일어나지 않습니다. 이제는 아까 만들어둔 CGPoint를 반환하는 함수를 이용할 때입니다.
 
-```
+```swift
 @objc func dynamicLabelTapped(_ sender: UITapGestureRecognizer) {
   let point = sender.location(in: dynamicLabel)
 
