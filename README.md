@@ -6,7 +6,7 @@
 
 다양한 상황에서 `UILabel`에 링크를 연결하기 위해, 기존 프로젝트에서 `TTTAttributedLabel`이라는 써드파티 라이브러리를 사용하고 있었습니다. 사실 해당 라이브러리가 텍스트에 링크만 달아주는 역할을 하지는 않습니다. 자동으로 URL, 주소, 전화번호 등의 데이터를 감지할 수도 있고, 한 `UILabel` 안에 다양한 스타일을 적용시킬 수도 있습니다. 
 
-하지만 2016년 이후로는 릴리즈가 없는 등 더 이상의 업데이트가 이루어지지 않고 있고, 전체 프로젝트에서 해당 라이브러리는 상당히 작은 부분에만 쓰이고 있었습니다. 그리고 현재 프로젝트 내에 많은 라이브러리가 있는데 버전 업데이트가 이루어지면서 변경사항을 팔로업 하는 것에 리소스가 많이 소요되는 문제가 있었습니다. 그래서 이러한 이유들로 `TTTAttributedLabel` 라이브러리를 걷어내기로 결정했습니다.
+하지만 2016년 이후로는 릴리즈가 없는 등 더 이상의 업데이트가 이루어지지 않고 있고, 전체 프로젝트에서 해당 라이브러리는 상당히 작은 부분에만 쓰이고 있었습니다. 그리고 현재 프로젝트 내에 많은 라이브러리가 사용되고 있는데 버전 업데이트가 이루어지면서 변경사항을 팔로업 하는 것에 리소스가 많이 소요되는 문제가 있었습니다. 그래서 이러한 이유들로 `TTTAttributedLabel` 라이브러리를 걷어내기로 결정했습니다.
 
 해당 라이브러리를 제거하기로 결정한 이상 몇가지 고려 할 사항이 있습니다.
 
@@ -239,34 +239,42 @@ private func present(url string: String) {
 extension UILabel {
   /// 입력된 포지션에 따라 라벨의 문자열의 인덱스 반환
   /// - Parameter point: 인덱스 값을 알고 싶은 CGPoint
-  func textIndex(at point: CGPoint) -> Int? {
-    guard let attributedText = attributedText else { return nil }
+    func textIndex(at point: CGPoint) -> Int? {
+        guard let attributedText = attributedText else { return nil }
 
-    let layoutManager = NSLayoutManager()
-    let textContainer = NSTextContainer(size: self.bounds.size)
-    let textStorage = NSTextStorage(attributedString: attributedText)
-    if let text = text {
-      let paragraph = NSMutableParagraphStyle()
-      paragraph.alignment = alignment
-      attributedText = NSAttributedString(string: text, attributes: [.paragraphStyle: paragraph])
+        let layoutManager = NSLayoutManager()
+        let textContainer = NSTextContainer(size: self.bounds.size)
+        let textStorage = NSTextStorage(attributedString: attributedText)
+
+        let paragraph = NSMutableParagraphStyle()
+        if let paragraphStyle = textStorage.attribute(
+            .paragraphStyle, at: 0, effectiveRange: nil
+        ) as? NSParagraphStyle {
+            paragraph.setParagraphStyle(paragraphStyle)
+        }
+        paragraph.alignment = textAlignment
+				textStorage.addAttribute(
+            .paragraphStyle,
+            value: paragraph,
+            range: NSRange(location: 0, length: textStorage.length)
+        )
+        textStorage.addLayoutManager(layoutManager)
+        textContainer.lineFragmentPadding = 0.0
+        layoutManager.addTextContainer(textContainer)
+
+        let range = layoutManager.glyphRange(for: textContainer)
+
+        var textOffset = CGPoint.zero
+        let textBounds = layoutManager.boundingRect(forGlyphRange: range, in: textContainer)
+        let paddingWidth = (self.bounds.size.width - textBounds.size.width) / 2
+        if paddingWidth > 0 {
+            textOffset.x = paddingWidth
+        }
+
+        let newPoint = CGPoint(x: point.x - textOffset.x, y: point.y - textOffset.y)
+
+        return layoutManager.glyphIndex(for: newPoint, in: textContainer)
     }
-    textStorage.addLayoutManager(layoutManager)
-    textContainer.lineFragmentPadding = 0.0
-    layoutManager.addTextContainer(textContainer)
-
-    let range = layoutManager.glyphRange(for: textContainer)
-
-    var textOffset = CGPoint.zero
-    let textBounds = layoutManager.boundingRect(forGlyphRange: range, in: textContainer)
-    let paddingWidth = (self.bounds.size.width - textBounds.size.width) / 2
-    if paddingWidth > 0 {
-      textOffset.x = paddingWidth
-    }
-
-    let newPoint = CGPoint(x: point.x - textOffset.x, y: point.y - textOffset.y)
-
-    return layoutManager.glyphIndex(for: newPoint, in: textContainer)
-  }
 }
 ```
 
@@ -340,7 +348,7 @@ private func configureLabel() {
 
 <img width="30%" src="https://user-images.githubusercontent.com/40784518/111072041-3b92ff80-851c-11eb-9832-cc4727eb7ed7.gif"/>
 
-그럼 위처럼 고정되지 않은 문자열에 스타일 적용 + 링크 띄워주기까지가 가능해집니다.!
+그럼 위처럼 고정되지 않은 문자열에 스타일 적용 + 링크 띄워주기가 가능해집니다.!
 
 
 

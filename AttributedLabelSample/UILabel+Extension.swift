@@ -33,18 +33,25 @@ extension UILabel {
 
     /// 입력된 포지션에 따라 라벨의 문자열의 인덱스 반환
     /// - Parameter point: 인덱스 값을 알고 싶은 CGPoint
-    func textIndex(at point: CGPoint, alignment: NSTextAlignment = .left) -> Int? {
-        guard var attributedText = attributedText else { return nil }
+    func textIndex(at point: CGPoint) -> Int? {
+        guard let attributedText = attributedText else { return nil }
 
         let layoutManager = NSLayoutManager()
         let textContainer = NSTextContainer(size: self.bounds.size)
         let textStorage = NSTextStorage(attributedString: attributedText)
 
-        if let text = text {
-            let paragraph = NSMutableParagraphStyle()
-            paragraph.alignment = alignment
-            attributedText = NSAttributedString(string: text, attributes: [.paragraphStyle: paragraph])
+        let paragraph = NSMutableParagraphStyle()
+        if let paragraphStyle = textStorage.attribute(
+            .paragraphStyle, at: 0, effectiveRange: nil
+        ) as? NSParagraphStyle {
+            paragraph.setParagraphStyle(paragraphStyle)
         }
+        paragraph.alignment = textAlignment
+        textStorage.addAttribute(
+            .paragraphStyle,
+            value: paragraph,
+            range: NSRange(location: 0, length: textStorage.length)
+        )
 
         textStorage.addLayoutManager(layoutManager)
         textContainer.lineFragmentPadding = 0.0
