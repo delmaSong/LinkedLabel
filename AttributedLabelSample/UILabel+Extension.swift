@@ -40,19 +40,6 @@ extension UILabel {
         let textContainer = NSTextContainer(size: self.bounds.size)
         let textStorage = NSTextStorage(attributedString: attributedText)
 
-        let paragraph = NSMutableParagraphStyle()
-        if let paragraphStyle = textStorage.attribute(
-            .paragraphStyle, at: 0, effectiveRange: nil
-        ) as? NSParagraphStyle {
-            paragraph.setParagraphStyle(paragraphStyle)
-        }
-        paragraph.alignment = textAlignment
-        textStorage.addAttribute(
-            .paragraphStyle,
-            value: paragraph,
-            range: NSRange(location: 0, length: textStorage.length)
-        )
-
         textStorage.addLayoutManager(layoutManager)
         textContainer.lineFragmentPadding = 0.0
         layoutManager.addTextContainer(textContainer)

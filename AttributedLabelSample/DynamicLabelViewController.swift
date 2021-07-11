@@ -14,7 +14,7 @@ class DynamicLabelViewController: UIViewController {
         let view = UILabel()
         view.numberOfLines = 0
         view.isUserInteractionEnabled = true
-        view.textAlignment = .center
+        view.textAlignment = .left
         view.translatesAutoresizingMaskIntoConstraints = false
 
         let recognizer = UITapGestureRecognizer(target: self, action: #selector(dynamicLabelTapped(_:)))
